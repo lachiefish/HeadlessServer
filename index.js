@@ -21,23 +21,33 @@ app.use(bodyParser.urlencoded({
 app.post('/', function(req, res) {
   var username = req.body.username;
   var password = req.body.password;
-  console.log(username);
-  console.log(password);
+  // console.log(username);
+  // console.log(password);
   loadSpaces(username, password);
+  setTimeout(function() {
+    var returnJSON = completeJSON;
+    if (returnJSON == null) {
+      res.end("error");
+    } else {
+      res.end(JSON.stringify(returnJSON));
+    }
+  }, 27000);
 });
 
 app.listen(process.env.PORT || 3000, function() {
-  console.log('Running Timetable Server on Port 3000!');
+  // console.log('Running Timetable Server on Port 3000!');
 });
 
 function loadSpaces(username, password) {
+  count = 8;
   var timetableURLPromise =
     horseman
     .userAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0')
+    .cookies([])
     .open('https://spaces.newington.nsw.edu.au/signin')
-    .on('error', function( msg ){
-    console.log(msg);
-  })
+    .on('error', function(msg) {
+      // console.log(msg);
+    })
     .click("body > div.container > div.row.button > div > section:nth-child(1) > a")
     .waitForNextPage({
       timeout: 15000
@@ -57,48 +67,46 @@ function loadSpaces(username, password) {
     })
     .url()
     .log()
-    .attribute('#diary_timetable_1', "data-uri");
+    .attribute('#diary_timetable_1', "data-view-loadable-view");
 
   timetableURLPromise.then(attribute => {
-    console.log("URL = " + attribute);
+    // console.log("URL = " + attribute);
     timetableURL = attribute;
     var URLBeforeDate = timetableURL.search('=');
-    timetableURL = timetableURL.slice(0, URLBeforeDate + 1);
-    console.log(timetableURL);
+    timetableURL = timetableURL.slice(8, URLBeforeDate + 1);
+    // console.log(timetableURL);
     getTimetableData();
   });
 }
 
 function getTimetableData() {
-  if (count < 10) {
-    date = "2017-05-0" + count;
-  } else if (count == 13 || count == 14) {
+  if (count <= 19) {
+    if (count < 10) {
+      date = "2017-05-0" + count;
+    } else if (count == 13 || count == 14) {
 
-  } else {
-    date = "2017-05-" + count;
-  }
-  var timetableHTMLPromise =
-    horseman
-    .open("https://spaces.newington.nsw.edu.au" + timetableURL + date)
-    .html("body > table > tbody");
-  timetableHTMLPromise.then(data => {
-    // console.log(data);
-    if (count != 20) {
+    } else {
+      date = "2017-05-" + count;
+    }
+    // console.log("MADE IT");
+    var timetableHTMLPromise =
+      horseman
+      .open("https://spaces.newington.nsw.edu.au" + timetableURL + date)
+      .html("body > table > tbody");
+    timetableHTMLPromise.then(data => {
       dataToJSON(data);
       count = count + 1;
       getTimetableData();
-    } else {
-      console.log("DONE");
-      console.log("!!!!!!!!!!!!!!!!!!!!!!!!!" + completeJSON);
-      console.log(util.inspect(completeJSON, false, null));
-      horseman.close();
-    }
-  });
+    });
+  } else {
+    console.log("DONE");
+    // console.log("!!!!!!!!!!!!!!!!!!!!!!!!!" + completeJSON);
+  }
 }
 
 function dataToJSON(html) {
   var json = himalaya.parse(html);
-  console.log(util.inspect(json, false, null));
+  // // console.log(util.inspect(json, false, null));
   organiseJSON(json);
 }
 
@@ -135,8 +143,8 @@ function organiseJSON(json) {
       day = "Friday";
       break;
   }
-  // console.log(util.inspect(json, false, null));
-  console.log(json);
+  // // console.log(util.inspect(json, false, null));
+  // console.log(json);
   if (count < 15) {
     var week = "A";
   } else {
@@ -146,8 +154,8 @@ function organiseJSON(json) {
   var timetableArray = [];
 
   for (var i = 0; i < Math.floor(json.length / 2); i++) {
-    console.log("day = " + day);
-    console.log(i);
+    // console.log("day = " + day);
+    // console.log(i);
     var index = (2 * i);
     if (json[index].children[1].children[0].content == "11:55AM") {
       var dayTimetable = {
