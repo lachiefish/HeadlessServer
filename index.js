@@ -27,11 +27,10 @@ app.post('/', function(req, res) {
   setTimeout(function() {
     var returnJSON = completeJSON;
     if (returnJSON == null) {
-      res.end("error");
     } else {
       res.end(JSON.stringify(returnJSON));
     }
-  }, 27000);
+  }, 25000);
 });
 
 app.listen(process.env.PORT || 3000, function() {
@@ -39,6 +38,7 @@ app.listen(process.env.PORT || 3000, function() {
 });
 
 function loadSpaces(username, password) {
+  completeJSON = [];
   count = 8;
   var timetableURLPromise =
     horseman
@@ -157,11 +157,11 @@ function organiseJSON(json) {
     console.log("day = " + day);
     console.log(i);
     var index = (2 * i);
-    if (json[index].children[1].children[0].content == "11:55AM") {
+    if (json[index].children[3].children[0].content == "Assembly") {
       var dayTimetable = {
         "time": json[index].children[1].children[0].content,
         "subject": json[index].children[3].children[0].content,
-        "class": "Assembly",
+        "class": "",
         "teacher_code": ""
       };
       timetableArray.push(dayTimetable);
