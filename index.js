@@ -152,11 +152,6 @@ function organiseJSON(json) {
 
   for (var i = 0; i < Math.floor(json.length / 2); i++) {
     period = i + 1;
-    switch (i + 1) {
-      case 3:
-        period = "Mentor";
-        break;
-    }
     var index = (2 * i);
     if (json[index].children[3].children[0].content == "Assembly") {
       var dayTimetable = {
@@ -167,13 +162,13 @@ function organiseJSON(json) {
         "period": "Assembly"
       };
       timetableArray.push(dayTimetable);
-    } else if (period == 3) {
+    } else if (json[index].children[3].children[0].content.indexOf("Mentor") != -1) {
       var dayTimetable = {
         "time": json[index].children[1].children[0].content,
         "subject": json[index].children[3].children[0].content,
         "class": json[index].children[5].children[0].content,
         "teacher_code": json[index].children[7].children[1].children[0].content,
-        "period": period
+        "period": "Mentor"
       };
     } else {
       var dayTimetable = {
