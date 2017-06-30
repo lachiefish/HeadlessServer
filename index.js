@@ -13,29 +13,24 @@ var timetableHTML = null;
 var count = 8;
 var completeJSON = [];
 var day = null;
+var postResponse = null;
 
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({
   extended: true
 })); // support encoded bodies
 
-app.get('/', function(req, res){
+app.get('/', function(req, res) {
   res.send('');
 });
 
 app.post('/', function(req, res) {
+  postResponse = res;
   var username = req.body.username;
   var password = req.body.password;
   console.log(username);
   console.log(password);
   loadSpaces(username, password);
-  setTimeout(function() {
-    var returnJSON = completeJSON;
-    if (returnJSON == null) {
-    } else {
-      res.end(JSON.stringify(returnJSON));
-    }
-  }, 25000);
 });
 
 app.listen(process.env.PORT || 3000, function() {
@@ -57,8 +52,6 @@ function loadSpaces(username, password) {
     .waitForNextPage({
       timeout: 15000
     })
-    .url()
-    .log()
     .type("#user_email", username)
     .type("#user_password", password)
     .click("#user_submit")
@@ -70,12 +63,11 @@ function loadSpaces(username, password) {
     .waitForNextPage({
       timeout: 15000
     })
-    .url()
-    .log()
+    .waitForSelector('#diary_timetable_1')
     .attribute('#diary_timetable_1', "data-view-loadable-view");
 
   timetableURLPromise.then(attribute => {
-    // console.log("URL = " + attribute);
+    console.log("URL = " + attribute);
     timetableURL = attribute;
     var URLBeforeDate = timetableURL.search('=');
     timetableURL = timetableURL.slice(8, URLBeforeDate + 1);
@@ -104,7 +96,7 @@ function getTimetableData() {
       getTimetableData();
     });
   } else {
-    // console.log("DONE");
+    console.log("DONE");
     // console.log("!!!!!!!!!!!!!!!!!!!!!!!!!" + completeJSON);
   }
 }
@@ -186,4 +178,15 @@ function organiseJSON(json) {
     "timetable": timetableArray
   };
   completeJSON.push(dayJSON);
+  if (count == 19) {
+    response();
+  }
+}
+
+function response() {
+  var returnJSON = completeJSON;
+  if (returnJSON != null) {
+    postResponse.send(JSON.stringify(returnJSON));
+    postResponse.end();
+  }
 }
