@@ -39,7 +39,7 @@ app.post('/', function(req, res) {
 });
 
 app.listen(process.env.PORT || 3000, function() {
-  console.log('Running Timetable Server on Port 3000!');
+  console.log('Running Timetable Server');
 });
 
 function loadSpaces(username, password) {
@@ -75,11 +75,11 @@ function loadSpaces(username, password) {
     .attribute('#diary_timetable_1', "data-view-loadable-view");
 
   timetableURLPromise.then(attribute => {
-    console.log("URL = " + attribute);
+    // console.log("URL = " + attribute);
     timetableURL = attribute;
     var URLBeforeDate = timetableURL.search('=');
     timetableURL = timetableURL.slice(8, URLBeforeDate + 1);
-    console.log(timetableURL);
+    // console.log(timetableURL);
     getTimetableData();
   });
 }
@@ -93,7 +93,7 @@ function getTimetableData() {
     } else {
       date = "2017-05-" + count;
     }
-    // console.log("MADE IT");
+    // // console.log("MADE IT");
     var timetableHTMLPromise =
       horseman
       .open("https://spaces.newington.nsw.edu.au" + timetableURL + date)
@@ -104,14 +104,14 @@ function getTimetableData() {
       getTimetableData();
     });
   } else {
-    console.log("DONE");
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!" + completeJSON);
+    // console.log("DONE");
+    // console.log("!!!!!!!!!!!!!!!!!!!!!!!!!" + completeJSON);
   }
 }
 
 function dataToJSON(html) {
   var json = himalaya.parse(html);
-  // // console.log(util.inspect(json, false, null));
+  // // // console.log(util.inspect(json, false, null));
   organiseJSON(json);
 }
 
@@ -148,8 +148,8 @@ function organiseJSON(json) {
       day = "Friday";
       break;
   }
-  // // console.log(util.inspect(json, false, null));
-  console.log(json);
+  // // // console.log(util.inspect(json, false, null));
+  // console.log(json);
   if (count < 15) {
     var week = "A";
   } else {
@@ -159,8 +159,8 @@ function organiseJSON(json) {
   var timetableArray = [];
 
   for (var i = 0; i < Math.floor(json.length / 2); i++) {
-    console.log("day = " + day);
-    console.log(i);
+    // console.log("day = " + day);
+    // console.log(i);
     var index = (2 * i);
     if (json[index].children[3].children[0].content == "Assembly") {
       var dayTimetable = {
