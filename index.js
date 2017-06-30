@@ -1,3 +1,4 @@
+require('newrelic');
 var Horseman = require('node-horseman');
 var horseman = new Horseman();
 var himalaya = require('himalaya');
@@ -17,6 +18,10 @@ app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({
   extended: true
 })); // support encoded bodies
+
+app.get('/', function(req, res){
+  res.send('');
+});
 
 app.post('/', function(req, res) {
   var username = req.body.username;
