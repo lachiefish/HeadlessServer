@@ -151,23 +151,37 @@ function organiseJSON(json) {
   var timetableArray = [];
 
   for (var i = 0; i < Math.floor(json.length / 2); i++) {
-    // console.log("day = " + day);
-    // console.log(i);
+    period = i + 1;
+    switch (i + 1) {
+      case 3:
+        period = "Mentor";
+        break;
+    }
     var index = (2 * i);
     if (json[index].children[3].children[0].content == "Assembly") {
       var dayTimetable = {
-        "time": json[index].children[1].children[0].content,
-        "subject": json[index].children[3].children[0].content,
+        "time": "",
+        "subject": "",
         "class": "",
-        "teacher_code": ""
+        "teacher_code": "",
+        "period": "Assembly"
       };
       timetableArray.push(dayTimetable);
+    } else if (period == 3) {
+      var dayTimetable = {
+        "time": json[index].children[1].children[0].content,
+        "subject": json[index].children[3].children[0].content,
+        "class": json[index].children[5].children[0].content,
+        "teacher_code": json[index].children[7].children[1].children[0].content,
+        "period": period
+      };
     } else {
       var dayTimetable = {
         "time": json[index].children[1].children[0].content,
         "subject": json[index].children[3].children[0].content,
         "class": json[index].children[5].children[0].content,
-        "teacher_code": json[index].children[7].children[1].children[0].content
+        "teacher_code": json[index].children[7].children[1].children[0].content,
+        "period": "Period " + period
       };
       timetableArray.push(dayTimetable);
     }
