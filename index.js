@@ -170,6 +170,7 @@ function organiseJSON(json) {
         "teacher_code": json[index].children[7].children[1].children[0].content,
         "period": "Mentor"
       };
+      timetableArray.push(dayTimetable);
     } else {
       var dayTimetable = {
         "time": json[index].children[1].children[0].content,
