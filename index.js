@@ -24,6 +24,8 @@ app.get('/', function(req, res) {
   res.send('');
 });
 
+//Cannot deal with multiple post requests at one time
+
 app.post('/', function(req, res) {
   postResponse = res;
   var username = req.body.username;

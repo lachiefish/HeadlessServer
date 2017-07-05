@@ -130,3 +130,4 @@
 {"v":0,"level":30,"name":"newrelic","hostname":"Lachlans-MacBook-Pro-2.local","pid":61976,"time":"2017-07-01T01:37:29.540Z","msg":"Starting New Relic for Node.js connection process."}
 {"v":0,"level":30,"name":"newrelic","hostname":"Lachlans-MacBook-Pro-2.local","pid":61976,"time":"2017-07-01T01:37:38.410Z","msg":"Reporting to: https://rpm.newrelic.com/accounts/1675586/applications/57164985","component":"new_relic_response"}
 {"v":0,"level":30,"name":"newrelic","hostname":"Lachlans-MacBook-Pro-2.local","pid":61976,"time":"2017-07-01T01:37:38.412Z","msg":"Connected to collector-252.newrelic.com:443 with agent run ID 245567405645979340.","component":"collector_api"}
+{"v":0,"level":40,"name":"newrelic","hostname":"Lachlans-MacBook-Pro-2.local","pid":61976,"time":"2017-07-01T01:38:42.085Z","msg":"transaction WebTransaction/Expressjs/POST// contained 998 segments, only collecting the first 900","component":"trace-aggregator"}
