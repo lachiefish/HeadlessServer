@@ -24,6 +24,10 @@ app.get('/', function(req, res) {
   res.send('');
 });
 
+app.get('/privacy', function(req, res) {
+  res.sendFile(path.join(__dirname + '/privacy.html'));
+});
+
 //Cannot deal with multiple post requests at one time
 
 app.post('/', function(req, res) {
