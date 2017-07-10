@@ -1,9 +1,10 @@
 {
   "name": "headlessserver",
   "dependencies": {
-    "async": "^2.4.1",
+    "async": "^2.5.0",
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
+    "express-queue": "0.0.5",
     "himalaya": "^0.2.10",
     "node-horseman": "^3.3.0",
     "phantomjs": "^2.1.7"
