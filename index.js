@@ -32,6 +32,7 @@ if (cluster.isMaster) {
       "password": password,
     });
     worker.on('message', function(msg) {
+      console.log(msg);
       if (msg !== null) {
         res.send(msg);
         res.end();
@@ -116,13 +117,18 @@ if (cluster.isWorker) {
           .catch(function(err) {
             error(err);
           })
+          .url()
+          .log()
+          .catch(function(err) {
+            error(err);
+          })
           .waitForNextPage({
             timeout: 15000
           })
           .catch(function(err) {
             error(err);
           })
-          .waitForSelector('#diary_timetable_1')
+          .waitForSelector('#diary_timetable_1',{timeout: 10000})
           .catch(function(err) {
             error(err);
           })
