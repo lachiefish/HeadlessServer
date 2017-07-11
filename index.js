@@ -38,8 +38,8 @@ if (cluster.isMaster) {
       } else {
         res.end();
       }
-      cluster.on('death', function(worker) {
-        console.log('Worker ' + worker.pid + ' died.');
+      worker.on('exit', function() {
+        console.log('Worker exited.');
       });
     });
   });
@@ -66,14 +66,12 @@ if (cluster.isWorker) {
   var postResponse = null;
 
   process.on('message', function(msg) {
-    console.log(msg);
-    var postResponse = msg.res;
     var username = msg.username;
     var password = msg.password;
     console.log(username);
     console.log(password);
-    async.series([
-      function loadSpaces(callback) {
+    loadSpaces();
+      function loadSpaces() {
         completeJSON = [];
         count = 8;
         var timetableURLPromise =
@@ -139,14 +137,14 @@ if (cluster.isWorker) {
             timetableURL = attribute;
             var URLBeforeDate = timetableURL.search('=');
             timetableURL = timetableURL.slice(8, URLBeforeDate + 1);
-            // console.log(timetableURL);
-            callback();
+            getTimetableData();
           } catch (err) {
             error(err);
           }
         });
-      },
-      function getTimetableData(callback) {
+      }
+
+      function getTimetableData() {
         if (count <= 19) {
           if (count < 10) {
             date = "2017-05-0" + count;
@@ -185,10 +183,8 @@ if (cluster.isWorker) {
           JSONstring = JSONstring.replace(/&amp;/g, "&");
           process.send(JSONstring);
           process.exit(1);
-          // callback();
         }
       }
-    ]);
   });
 
   function dataToJSON(html) {
