@@ -25,8 +25,6 @@ if (cluster.isMaster) {
     var worker = cluster.fork();
     var username = req.body.username;
     var password = req.body.password;
-    console.log(username);
-    console.log(password);
     worker.send({
       "username": username,
       "password": password,
@@ -68,8 +66,6 @@ if (cluster.isWorker) {
   process.on('message', function(msg) {
     var username = msg.username;
     var password = msg.password;
-    console.log(username);
-    console.log(password);
     loadSpaces();
       function loadSpaces() {
         completeJSON = [];
@@ -117,7 +113,6 @@ if (cluster.isWorker) {
             error(err);
           })
           .url()
-          .log()
           .catch(function(err) {
             error(err);
           })
@@ -158,7 +153,6 @@ if (cluster.isWorker) {
           } else {
             date = "2017-05-" + count;
           }
-          // // console.log("MADE IT");
           var timetableHTMLPromise =
             horseman
             .open("https://spaces.newington.nsw.edu.au" + timetableURL + date)
@@ -195,7 +189,6 @@ if (cluster.isWorker) {
   function dataToJSON(html) {
     try {
       var json = himalaya.parse(html);
-      // // // console.log(util.inspect(json, false, null));
       organiseJSON(json);
     } catch (err) {
       console.log(err.message);
