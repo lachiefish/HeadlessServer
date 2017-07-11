@@ -32,7 +32,6 @@ if (cluster.isMaster) {
       "password": password,
     });
     worker.on('message', function(msg) {
-      console.log(msg);
       if (msg !== null) {
         res.send(msg);
         res.end();
