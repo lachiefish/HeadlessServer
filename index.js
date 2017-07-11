@@ -1,80 +1,136 @@
-require('newrelic');
-var Horseman = require('node-horseman');
-var horseman = new Horseman();
-var himalaya = require('himalaya');
-var util = require('util');
-var express = require('express');
-var app = express();
-var bodyParser = require('body-parser');
-var async = require('async');
-var queue = require('express-queue');
+var cluster = require('cluster');
+if (cluster.isMaster) {
+  cluster.fork();
+  console.log("First Cluster Forked");
+  cluster.on('exit', function(worker, code, signal) {
+    console.log('Worker ' + worker.id + ' died..');
+    cluster.fork();
+    console.log("New Cluster Forked");
+  });
+}
+if (cluster.isWorker) {
+  require('newrelic');
+  var Horseman = require('node-horseman');
+  var horseman = new Horseman();
+  var himalaya = require('himalaya');
+  var util = require('util');
+  var express = require('express');
+  var app = express();
+  var bodyParser = require('body-parser');
+  var async = require('async');
+  var queue = require('express-queue');
 
-var timetableURL = null;
-var date = null;
-var timetableHTML = null;
-var count = 8;
-var completeJSON = [];
-var day = null;
-var username = "";
-var password = "";
+  var timetableURL = null;
+  var date = null;
+  var timetableHTML = null;
+  var count = 8;
+  var completeJSON = [];
+  var day = null;
+  var username = "";
+  var password = "";
+  var postResponse = null;
 
-app.use(queue({
-  activeLimit: 1
-}));
-app.use(bodyParser.json()); // support json encoded bodies
-app.use(bodyParser.urlencoded({
-  extended: true
-})); // support encoded bodies
+  app.use(queue({
+    activeLimit: 1
+  }));
+  app.use(bodyParser.json()); // support json encoded bodies
+  app.use(bodyParser.urlencoded({
+    extended: true
+  })); // support encoded bodies
 
-app.get('/', function(req, res) {
-  res.send('');
-});
+  app.get('/', function(req, res) {
+    res.send('');
+  });
 
-app.get('/privacy', function(req, res) {
-  res.sendFile(__dirname + '/privacy.html');
-});
+  app.get('/privacy', function(req, res) {
+    res.sendFile(__dirname + '/privacy.html');
+  });
 
+  app.listen(process.env.PORT || 3000, function() {
+    console.log('Running Timetable Server');
+  });
 
-app.post('/', function(req, res) {
-  var username = req.body.username;
-  var password = req.body.password;
-  console.log(username);
-  console.log(password);
-  async.series([
-    function loadSpaces(callback) {
+  app.post('/', function(req, res) {
+    postResponse = res;
+    var username = req.body.username;
+    var password = req.body.password;
+    console.log(username);
+    console.log(password);
+    async.series([
+      function loadSpaces(callback) {
         completeJSON = [];
         count = 8;
         var timetableURLPromise =
           horseman
           .userAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0')
+          .catch(function(err) {
+            error(err);
+          })
           .cookies([])
+          .catch(function(err) {
+            error(err);
+          })
           .open('https://spaces.newington.nsw.edu.au/signin')
+          .catch(function(err) {
+            error(err);
+          })
           .click("body > div.container > div.row.button > div > section:nth-child(1) > a")
+          .catch(function(err) {
+            error(err);
+          })
           .waitForNextPage({
             timeout: 15000
+          })
+          .catch(function(err) {
+            error(err);
           })
           .type("#user_email", username)
+          .catch(function(err) {
+            error(err);
+          })
           .type("#user_password", password)
+          .catch(function(err) {
+            error(err);
+          })
           .click("#user_submit")
-          .waitForNextPage({
-            timeout: 15000
+          .catch(function(err) {
+            error(err);
           })
           .waitForNextPage({
             timeout: 15000
+          })
+          .catch(function(err) {
+            error(err);
+          })
+          .waitForNextPage({
+            timeout: 15000
+          })
+          .catch(function(err) {
+            error(err);
           })
           .waitForSelector('#diary_timetable_1')
-          .attribute('#diary_timetable_1', "data-view-loadable-view");
+          .catch(function(err) {
+            error(err);
+          })
+          .attribute('#diary_timetable_1', "data-view-loadable-view")
+          .catch(function(err) {
+            error(err);
+          });
 
         timetableURLPromise.then(function(attribute) {
-          console.log("URL = " + attribute);
-          timetableURL = attribute;
-          var URLBeforeDate = timetableURL.search('=');
-          timetableURL = timetableURL.slice(8, URLBeforeDate + 1);
-          // console.log(timetableURL);
-          callback();
+          try {
+            console.log("URL = " + attribute);
+            timetableURL = attribute;
+            var URLBeforeDate = timetableURL.search('=');
+            timetableURL = timetableURL.slice(8, URLBeforeDate + 1);
+            // console.log(timetableURL);
+            callback();
+          } catch (err) {
+            error(err);
+          }
         });
-    },
-    function getTimetableData(callback) {
+      },
+      function getTimetableData(callback) {
         if (count <= 19) {
           if (count < 10) {
             date = "2017-05-0" + count;
@@ -87,12 +143,25 @@ app.post('/', function(req, res) {
           var timetableHTMLPromise =
             horseman
             .open("https://spaces.newington.nsw.edu.au" + timetableURL + date)
+            .catch(function(err) {
+              error(err);
+            })
             .waitForSelector("body > table > tbody")
-            .html("body > table > tbody");
+            .catch(function(err) {
+              error(err);
+            })
+            .html("body > table > tbody")
+            .catch(function(err) {
+              error(err);
+            });
           timetableHTMLPromise.then(function(data) {
-            dataToJSON(data);
-            count = count + 1;
-            getTimetableData();
+            try {
+              dataToJSON(data);
+              count = count + 1;
+              getTimetableData();
+            } catch (err) {
+              error(err);
+            }
           });
         } else {
           console.log("DONE");
@@ -102,104 +171,106 @@ app.post('/', function(req, res) {
           res.end();
           // callback();
         }
+      }
+    ]);
+  });
+
+  function dataToJSON(html) {
+    try {
+      var json = himalaya.parse(html);
+      // // // console.log(util.inspect(json, false, null));
+      organiseJSON(json);
+    } catch (err) {
+      console.log(err.message);
     }
-  ]);
-});
+  }
 
-app.listen(process.env.PORT || 3000, function() {
-  console.log('Running Timetable Server');
-});
-
-
-function dataToJSON(html) {
-  try {
-    var json = himalaya.parse(html);
+  function organiseJSON(json) {
+    switch (count) {
+      case 8:
+        day = "Monday";
+        break;
+      case 15:
+        day = "Monday";
+        break;
+      case 9:
+        day = "Tuesday";
+        break;
+      case 16:
+        day = "Tuesday";
+        break;
+      case 10:
+        day = "Wednesday";
+        break;
+      case 17:
+        day = "Wednesday";
+        break;
+      case 11:
+        day = "Thursday";
+        break;
+      case 18:
+        day = "Thursday";
+        break;
+      case 12:
+        day = "Friday";
+        break;
+      case 19:
+        day = "Friday";
+        break;
+    }
     // // // console.log(util.inspect(json, false, null));
-    organiseJSON(json);
-  } catch (err) {
-    console.log(err.message);
-  }
-}
-
-function organiseJSON(json) {
-  switch (count) {
-    case 8:
-      day = "Monday";
-      break;
-    case 15:
-      day = "Monday";
-      break;
-    case 9:
-      day = "Tuesday";
-      break;
-    case 16:
-      day = "Tuesday";
-      break;
-    case 10:
-      day = "Wednesday";
-      break;
-    case 17:
-      day = "Wednesday";
-      break;
-    case 11:
-      day = "Thursday";
-      break;
-    case 18:
-      day = "Thursday";
-      break;
-    case 12:
-      day = "Friday";
-      break;
-    case 19:
-      day = "Friday";
-      break;
-  }
-  // // // console.log(util.inspect(json, false, null));
-  // console.log(json);
-  if (count < 15) {
-    var week = "A";
-  } else {
-    var week = "B";
-  }
-
-  var timetableArray = [];
-
-  for (var i = 0; i < Math.floor(json.length / 2); i++) {
-    period = i + 1;
-    var index = (2 * i);
-    if (json[index].children[3].children[0].content == "Assembly") {
-      var dayTimetable = {
-        "time": "",
-        "subject": "",
-        "class": "",
-        "teacher_code": "",
-        "period": "Assembly"
-      };
-      timetableArray.push(dayTimetable);
-    } else if (json[index].children[3].children[0].content.indexOf("Mentor") != -1) {
-      var dayTimetable = {
-        "time": json[index].children[1].children[0].content,
-        "subject": json[index].children[3].children[0].content,
-        "class": json[index].children[5].children[0].content,
-        "teacher_code": json[index].children[7].children[1].children[0].content,
-        "period": "Mentor"
-      };
-      timetableArray.push(dayTimetable);
+    // console.log(json);
+    if (count < 15) {
+      var week = "A";
     } else {
-      var dayTimetable = {
-        "time": json[index].children[1].children[0].content,
-        "subject": json[index].children[3].children[0].content,
-        "class": json[index].children[5].children[0].content,
-        "teacher_code": json[index].children[7].children[1].children[0].content,
-        "period": "Period " + period
-      };
-      timetableArray.push(dayTimetable);
+      var week = "B";
     }
+
+    var timetableArray = [];
+
+    for (var i = 0; i < Math.floor(json.length / 2); i++) {
+      period = i + 1;
+      var index = (2 * i);
+      if (json[index].children[3].children[0].content == "Assembly") {
+        var dayTimetable = {
+          "time": "",
+          "subject": "",
+          "class": "",
+          "teacher_code": "",
+          "period": "Assembly"
+        };
+        timetableArray.push(dayTimetable);
+      } else if (json[index].children[3].children[0].content.indexOf("Mentor") != -1) {
+        var dayTimetable = {
+          "time": json[index].children[1].children[0].content,
+          "subject": json[index].children[3].children[0].content,
+          "class": json[index].children[5].children[0].content,
+          "teacher_code": json[index].children[7].children[1].children[0].content,
+          "period": "Mentor"
+        };
+        timetableArray.push(dayTimetable);
+      } else {
+        var dayTimetable = {
+          "time": json[index].children[1].children[0].content,
+          "subject": json[index].children[3].children[0].content,
+          "class": json[index].children[5].children[0].content,
+          "teacher_code": json[index].children[7].children[1].children[0].content,
+          "period": "Period " + period
+        };
+        timetableArray.push(dayTimetable);
+      }
+    }
+    var dayJSON = {
+      "week": week,
+      "day": day,
+      "timetable": timetableArray
+    };
+    completeJSON.push(dayJSON);
   }
-  var dayJSON = {
-    "week": week,
-    "day": day,
-    "timetable": timetableArray
-  };
-  completeJSON.push(dayJSON);
+
+  function error(err) {
+    postResponse.end();
+    console.log(err);
+    process.exit(1);
+  }
 }
