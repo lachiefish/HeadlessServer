@@ -1,38 +1,9 @@
 var cluster = require('cluster');
 if (cluster.isMaster) {
-  cluster.fork();
-  console.log("First Cluster Forked");
-  cluster.on('exit', function(worker, code, signal) {
-    console.log('Worker ' + worker.id + ' died..');
-    cluster.fork();
-    console.log("New Cluster Forked");
-  });
-}
-if (cluster.isWorker) {
-  require('newrelic');
-  var Horseman = require('node-horseman');
-  var horseman = new Horseman();
-  var himalaya = require('himalaya');
-  var util = require('util');
   var express = require('express');
   var app = express();
   var bodyParser = require('body-parser');
-  var async = require('async');
-  var queue = require('express-queue');
 
-  var timetableURL = null;
-  var date = null;
-  var timetableHTML = null;
-  var count = 8;
-  var completeJSON = [];
-  var day = null;
-  var username = "";
-  var password = "";
-  var postResponse = null;
-
-  app.use(queue({
-    activeLimit: 1
-  }));
   app.use(bodyParser.json()); // support json encoded bodies
   app.use(bodyParser.urlencoded({
     extended: true
@@ -51,9 +22,54 @@ if (cluster.isWorker) {
   });
 
   app.post('/', function(req, res) {
-    postResponse = res;
+    var worker = cluster.fork();
     var username = req.body.username;
     var password = req.body.password;
+    console.log(username);
+    console.log(password);
+    worker.send({
+      "username": username,
+      "password": password,
+    });
+    worker.on('message', function(msg) {
+      if (msg !== null) {
+        res.send(msg);
+        res.end();
+      } else {
+        res.end();
+      }
+      cluster.on('death', function(worker) {
+        console.log('Worker ' + worker.pid + ' died.');
+      });
+    });
+  });
+}
+
+if (cluster.isWorker) {
+  console.log("This is worker " + process.pid);
+  require('newrelic');
+  var Horseman = require('node-horseman');
+  var horseman = new Horseman();
+  var himalaya = require('himalaya');
+  var util = require('util');
+  var async = require('async');
+  var queue = require('express-queue');
+
+  var timetableURL = null;
+  var date = null;
+  var timetableHTML = null;
+  var count = 8;
+  var completeJSON = [];
+  var day = null;
+  var username = "";
+  var password = "";
+  var postResponse = null;
+
+  process.on('message', function(msg) {
+    console.log(msg);
+    var postResponse = msg.res;
+    var username = msg.username;
+    var password = msg.password;
     console.log(username);
     console.log(password);
     async.series([
@@ -167,8 +183,8 @@ if (cluster.isWorker) {
           console.log("DONE");
           var JSONstring = JSON.stringify(completeJSON);
           JSONstring = JSONstring.replace(/&amp;/g, "&");
-          res.send(JSONstring);
-          res.end();
+          process.send(JSONstring);
+          process.exit(1);
           // callback();
         }
       }
@@ -182,6 +198,7 @@ if (cluster.isWorker) {
       organiseJSON(json);
     } catch (err) {
       console.log(err.message);
+      process.exit(1);
     }
   }
 
@@ -218,8 +235,6 @@ if (cluster.isWorker) {
         day = "Friday";
         break;
     }
-    // // // console.log(util.inspect(json, false, null));
-    // console.log(json);
     if (count < 15) {
       var week = "A";
     } else {
@@ -269,7 +284,7 @@ if (cluster.isWorker) {
   }
 
   function error(err) {
-    postResponse.end();
+    process.send(null);
     console.log(err);
     process.exit(1);
   }

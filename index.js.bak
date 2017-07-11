@@ -202,7 +202,6 @@ function organiseJSON(json) {
   };
   completeJSON.push(dayJSON);
   if (count == 19) {
-    timetableArray = timetableArray.toString().replace("&amp;", "&").then(response());
     response();
   }
 }
