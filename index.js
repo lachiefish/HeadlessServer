@@ -42,7 +42,6 @@ app.post('/', function(req, res) {
   console.log(password);
   async.series([
     function loadSpaces(callback) {
-      try {
         completeJSON = [];
         count = 8;
         var timetableURLPromise =
@@ -60,8 +59,6 @@ app.post('/', function(req, res) {
           .waitForNextPage({
             timeout: 15000
           })
-          .url()
-          .log()
           .waitForNextPage({
             timeout: 15000
           })
@@ -76,13 +73,8 @@ app.post('/', function(req, res) {
           // console.log(timetableURL);
           callback();
         });
-      } catch (err) {
-        res.send("Error: " + err.message);
-        res.end();
-      }
     },
     function getTimetableData(callback) {
-      try {
         if (count <= 19) {
           if (count < 10) {
             date = "2017-05-0" + count;
@@ -95,9 +87,7 @@ app.post('/', function(req, res) {
           var timetableHTMLPromise =
             horseman
             .open("https://spaces.newington.nsw.edu.au" + timetableURL + date)
-            .catch(function(err) {
-              console.log(err);
-            })
+            .waitForSelector("body > table > tbody")
             .html("body > table > tbody");
           timetableHTMLPromise.then(function(data) {
             dataToJSON(data);
@@ -112,10 +102,6 @@ app.post('/', function(req, res) {
           res.end();
           // callback();
         }
-      } catch (err) {
-        res.send("Error: " + err.message);
-        res.end();
-      }
     }
   ]);
 });
