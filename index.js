@@ -34,6 +34,7 @@ if (cluster.isMaster) {
         res.send(msg);
         res.end();
       } else {
+        res.status(500);
         res.end();
       }
       worker.on('exit', function() {
