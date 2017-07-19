@@ -67,135 +67,115 @@ if (cluster.isWorker) {
   process.on('message', function(msg) {
     var username = msg.username;
     var password = msg.password;
-    loadSpaces();
-      function loadSpaces() {
-        completeJSON = [];
-        count = 8;
-        var timetableURLPromise =
-          horseman
-          .userAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0')
-          .catch(function(err) {
-            error(err);
-          })
-          .cookies([])
-          .catch(function(err) {
-            error(err);
-          })
-          .open('https://spaces.newington.nsw.edu.au/signin')
-          .catch(function(err) {
-            error(err);
-          })
-          .click("body > div.container > div.row.button > div > section:nth-child(1) > a")
-          .catch(function(err) {
-            error(err);
-          })
-          .waitForNextPage({
-            timeout: 15000
-          })
-          .catch(function(err) {
-            error(err);
-          })
-          .type("#user_email", username)
-          .catch(function(err) {
-            error(err);
-          })
-          .type("#user_password", password)
-          .catch(function(err) {
-            error(err);
-          })
-          .click("#user_submit")
-          .catch(function(err) {
-            error(err);
-          })
-          .waitForNextPage({
-            timeout: 15000
-          })
-          .catch(function(err) {
-            error(err);
-          })
-          .url()
-          .catch(function(err) {
-            error(err);
-          })
-          .waitForNextPage({
-            timeout: 15000
-          })
-          .catch(function(err) {
-            error(err);
-          })
-          .waitForSelector('#diary_timetable_1',{timeout: 10000})
-          .catch(function(err) {
-            error(err);
-          })
-          .attribute('#diary_timetable_1', "data-view-loadable-view")
-          .catch(function(err) {
-            error(err);
-          });
+    loadSpaces()
+      .catch(err => error(err))
+      .then(attribute => {
+        timetableURL = JSON.parse(attribute).uri;
+        var URLBeforeDate = timetableURL.search('=');
+        timetableURL = timetableURL.slice(0, URLBeforeDate + 1);
+        getTimetableData()
+          .catch(err => error(err))
+          .then(timetableHandler);
+      });
 
-        timetableURLPromise.then(function(attribute) {
-          try {
-            console.log("URL = " + attribute);
-            timetableURL = attribute;
-            var URLBeforeDate = timetableURL.search('=');
-            timetableURL = timetableURL.slice(8, URLBeforeDate + 1);
-            getTimetableData();
-          } catch (err) {
-            error(err);
-          }
-        });
+      function timetableHandler(data) {
+        dataToJSON(data);
+        count = count + 1;
+        getTimetableData()
+          .catch(err => error(err))
+          .then(timetableHandler);
       }
 
-      function getTimetableData() {
-        if (count <= 19) {
-          if (count < 10) {
-            date = "2017-05-0" + count;
-          } else if (count == 13 || count == 14) {
+    function loadSpaces() {
+      completeJSON = [];
+      count = 8;
+      var timetableURLPromise =
+        horseman
+        .userAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0')
+        .cookies([])
+        .open('https://spaces.newington.nsw.edu.au/signin')
+        .click("body > div.container > div.row.button > div > section:nth-child(1) > a")
+        .waitForNextPage({
+          timeout: 15000
+        })
+        .type("#user_email", username)
+        .type("#user_password", password)
+        .click("#user_submit")
+        .waitForNextPage({
+          timeout: 15000
+        })
+        .url()
+        .waitForNextPage({
+          timeout: 15000
+        })
+        .waitForSelector('#diary_timetable_1', {
+          timeout: 10000
+        })
+        .attribute('#diary_timetable_1', "data-view-loadable-view");
+      return timetableURLPromise;
+      //  .on("error", function() {
+      //   horseman.catch(function(err) {
+      //     error(err);
+      //   });
+      // })
 
-          } else {
-            date = "2017-05-" + count;
-          }
-          var timetableHTMLPromise =
-            horseman
-            .open("https://spaces.newington.nsw.edu.au" + timetableURL + date)
-            .catch(function(err) {
-              error(err);
-            })
-            .waitForSelector("body > table > tbody")
-            .catch(function(err) {
-              error(err);
-            })
-            .html("body > table > tbody")
-            .catch(function(err) {
-              error(err);
-            });
-          timetableHTMLPromise.then(function(data) {
-            try {
-              dataToJSON(data);
-              count = count + 1;
-              getTimetableData();
-            } catch (err) {
-              error(err);
-            }
-          });
+      // timetableURLPromise.then(function(attribute) {
+      //   try {
+      //     console.log("URL = " + attribute);
+      //     timetableURL = attribute;
+      //     var URLBeforeDate = timetableURL.search('=');
+      //     timetableURL = timetableURL.slice(8, URLBeforeDate + 1);
+      //     getTimetableData();
+      //   } catch (err) {
+      //     error(err);
+      //   }
+      // });
+    }
+
+    function getTimetableData() {
+      if (count <= 19) {
+        if (count < 10) {
+          date = "2017-05-0" + count;
+        } else if (count == 13 || count == 14) {
+
         } else {
-          console.log("DONE");
-          var JSONstring = JSON.stringify(completeJSON);
-          JSONstring = JSONstring.replace(/&amp;/g, "&");
-          process.send(JSONstring);
-          process.exit(1);
+          date = "2017-05-" + count;
         }
+        var timetableHTMLPromise =
+          horseman
+          .open("https://spaces.newington.nsw.edu.au" + timetableURL + date)
+          .waitForSelector("body > table > tbody")
+          .html("body > table > tbody");
+        return timetableHTMLPromise;
+        // timetableHTMLPromise.then(function(data) {
+        //   try {
+        //     dataToJSON(data);
+        //     count = count + 1;
+        //     getTimetableData();
+        //   } catch (err) {
+        //     error(err);
+        //   }
+        // });
+      } else {
+        console.log("DONE");
+        var JSONstring = JSON.stringify(completeJSON);
+        JSONstring = JSONstring.replace(/&amp;/g, "&");
+        process.send(JSONstring);
+        process.exit(1);
       }
+    }
   });
 
   function dataToJSON(html) {
-    try {
+    if (html !== null){
       var json = himalaya.parse(html);
       organiseJSON(json);
-    } catch (err) {
       console.log(err.message);
       process.exit(1);
-    }
+  }else{
+    error(null);
   }
+}
 
   function organiseJSON(json) {
     switch (count) {
