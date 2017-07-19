@@ -50,13 +50,11 @@ app.post('/', function(req, res) {
 
 function resPromise(resolve, reject) {
   loadSpaces()
-    .catch(err => error(err))
     .then(attribute => {
       timetableURL = JSON.parse(attribute).uri;
       var URLBeforeDate = timetableURL.search('=');
       timetableURL = timetableURL.slice(0, URLBeforeDate + 1);
       getTimetableData()
-        .catch(err => error(err))
         .then(timetableHandler);
     });
 
@@ -64,7 +62,6 @@ function resPromise(resolve, reject) {
     dataToJSON(data);
     count = count + 1;
     getTimetableData()
-      .catch(err => error(err))
       .then(timetableHandler);
   }
 
