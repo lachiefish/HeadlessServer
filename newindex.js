@@ -33,9 +33,14 @@ app.post('/', function(req, res) {
 });
 
 function loadTimetable(username, password) {
+  // @TODO Would be better to return the horseman promise (instead of making
+  // new promise) since nothing happens after it.
   return new Promise((resolve, reject) => {
     var horseman = new Horseman();
     getDataURI(username, password, horseman)
+      // @TODO You are passing an executing function, not a function reference,
+      // so its being called as soon as loadTimetable is run your 2nd and 3rd
+      // .then is correct as it's not being executed.
       .then(getStudentNumber(timetableURI))
       .then(() => {
         for (count == 8; count <= 19; count++) {
@@ -47,6 +52,8 @@ function loadTimetable(username, password) {
 }
 
 function getDataURI(username, password, horseman) {
+  // @TODO Would be better to return the horseman promise (instead of making
+  // new promise) since nothing happens after it.
   return new Promise((resolve, reject) => {
     count = 8;
     var timetableURI =
@@ -76,12 +83,13 @@ function getDataURI(username, password, horseman) {
     if (timetableURI !== null) {
       resolve(timetableURI);
     } else {
+      // @TODO Pass a string or error object to be delt with outside promise.
       reject(console.log("Error in getDataURI function"));
     }
   });
 }
 
-function getStudentNumber(timetableURI){
+function getStudentNumber(timetableURI) {
   timetableURL = JSON.parse(timetableURI).uri;
   var URLBeforeDate = timetableURL.search('=');
   timetableURL = timetableURL.slice(0, URLBeforeDate + 1);
@@ -89,6 +97,8 @@ function getStudentNumber(timetableURI){
 }
 
 function getTimetableData(count, timetableURL, horseman) {
+  // @TODO Would be better to return the horseman promise (instead of making
+  // new promise) since nothing happens after it.
   return new Promise((resolve, reject) => {
     if (count < 10) {
       date = "2017-05-0" + count;
@@ -106,12 +116,15 @@ function getTimetableData(count, timetableURL, horseman) {
     if (timetableHTMLPromise !== null) {
       resolve(timetableHTMLPromise);
     } else {
+      // @TODO Pass a string or error object to be delt with outside promise.
       reject(console.log("Error in getTimetableData function"));
     }
   });
 }
 
 function arrangeJSON() {
+  // @TODO Would be better to return the horseman promise (instead of making
+  // new promise) since nothing happens after it.
   return new Promise((resolve, reject) => {
     var JSONstring = JSON.stringify(completeJSON);
     JSONstring = JSONstring.replace(/&amp;/g, "&");
@@ -119,6 +132,7 @@ function arrangeJSON() {
     if (JSONstring !== null) {
       resolve(JSONstring);
     } else {
+      // @TODO Pass a string or error object to be delt with outside promise.
       reject(console.log("Error in arrangeJSON function"));
     }
   });
