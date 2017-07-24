@@ -114,28 +114,16 @@ function organiseJSON(timetableJSON, count, completeJSON){
       case (8 || 15):
         day = "Monday";
         break;
-      case 9:
+      case (9 || 16):
         day = "Tuesday";
         break;
-      case 16:
-        day = "Tuesday";
-        break;
-      case 10:
+      case (10 || 17):
         day = "Wednesday";
         break;
-      case 17:
-        day = "Wednesday";
-        break;
-      case 11:
+      case (11 || 18):
         day = "Thursday";
         break;
-      case 18:
-        day = "Thursday";
-        break;
-      case 12:
-        day = "Friday";
-        break;
-      case 19:
+      case (12 || 19):
         day = "Friday";
         break;
     }
@@ -169,6 +157,9 @@ function organiseJSON(timetableJSON, count, completeJSON){
         };
         timetableArray.push(dayTimetable);
       } else {
+        if (day == "Wednesday" && period > 4) {
+          period = period -1
+        }
         var dayTimetable = {
           "time": timetableJSON[index].children[1].children[0].content,
           "subject": timetableJSON[index].children[3].children[0].content,
