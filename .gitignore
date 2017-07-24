@@ -56,3 +56,10 @@ typings/
 
 # dotenv environment variables file
 .env
+
+.newrelic_agent
+.newrelic
+.babelrc
+.flowconfig
+*sublime-workspace
+flow-typed/
