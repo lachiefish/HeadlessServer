@@ -9,6 +9,9 @@
     "phantomjs": "^2.1.7"
   },
   "version": "1.0.0",
+  "engines": {
+    "node": "8.1.4"
+  },
   "description": "",
   "main": "index.js",
   "scripts": {
