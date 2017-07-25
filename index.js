@@ -100,19 +100,19 @@ function HTMLtoJSON(timetableDayHTML) {
 function organiseJSON(timetableJSON, count, completeJSON) {
   var day = ""
   switch (count) {
-    case (8 || 15):
+    case (8 && 15):
       day = "Monday";
       break;
-    case (9 || 16):
+    case (9 && 16):
       day = "Tuesday";
       break;
-    case (10 || 17):
+    case (10 && 17):
       day = "Wednesday";
       break;
-    case (11 || 18):
+    case (11 && 18):
       day = "Thursday";
       break;
-    case (12 || 19):
+    case (12 && 19):
       day = "Friday";
       break;
   }
