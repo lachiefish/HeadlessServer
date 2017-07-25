@@ -5,8 +5,6 @@ var app = express();
 var bodyParser = require('body-parser');
 var Horseman = require('node-horseman');
 var himalaya = require('himalaya');
-var util = require('util');
-var async = require('async');
 
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({
@@ -28,7 +26,7 @@ app.listen(process.env.PORT || 3000, function() {
 app.post('/', async function(req, res) {
   var username = req.body.username;
   var password = req.body.password;
-  var horseman = new Horseman();
+  var horseman = new Horseman({timeout: 15000});
   var response = await loadTimetable(username, password, horseman)
   res.send(response);
   res.end()
@@ -56,22 +54,14 @@ function getDataURI(username, password, horseman) {
     .userAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0')
     .open('https://spaces.newington.nsw.edu.au/signin')
     .click("body > div.container > div.row.button > div > section:nth-child(1) > a")
-    .waitForNextPage({
-      timeout: 15000
-    })
+    .waitForNextPage()
     .type("#user_email", username)
     .type("#user_password", password)
     .click("#user_submit")
-    .waitForNextPage({
-      timeout: 15000
-    })
+    .waitForNextPage()
     .url()
-    .waitForNextPage({
-      timeout: 15000
-    })
-    .waitForSelector('#diary_timetable_1', {
-      timeout: 10000
-    })
+    .waitForNextPage()
+    .waitForSelector('#diary_timetable_1')
     .attribute('#diary_timetable_1', "data-view-loadable-view");
   return timetableURI;
 }
@@ -100,7 +90,6 @@ function getTimetableData(count, timetableURL, horseman) {
 
 function HTMLtoJSON(timetableDayHTML) {
   if (timetableDayHTML !== null) {
-    console.log(timetableDayHTML);
     var json = himalaya.parse(timetableDayHTML);
     return json
   } else {
