@@ -1,5 +1,3 @@
-/* @flow */
-/* @annotations */
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
@@ -17,6 +15,10 @@ app.get('/', function(req, res) {
 
 app.get('/privacy', function(req, res) {
   res.sendFile(__dirname + '/privacy.html');
+});
+
+app.get('/help', function(req, res) {
+  res.sendFile(__dirname + '/help.html');
 });
 
 app.listen(process.env.PORT || 3000, function() {
@@ -180,3 +182,6 @@ function arrangeJSON(completeJSON) {
 function error(err) {
   console.log("Error!!!");
 }
+
+
+//special thanks to HARRY
